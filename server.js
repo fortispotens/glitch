@@ -1,11 +1,23 @@
 const express = require('express');
-const objectToCSV = require('objects-to-csv');
+const objectsToCSV = require('objects-to-csv');
+const fs = require('fs');
 
 const app = express();
 
+const data = require('./data');
+
+app.use(express.json());
+
+app.get('/download-csv', async (request, response) => {
+	const csv = await new objectsToCSV(data);
+
+	await csv.toDisk('./data.csv');
+
+	return response.status(200).download('./data.csv', () => {
+		fs.unlinkSync('./data.csv');
+	});
+});
+
 const port = 5000;
 
-app.listen(port, () => console.debug('Welcome to Load json to csv'));
-
-// Node.js Express Download CSV File From Array of Objects Using objects to csv Lib
-// How to Convert CSV Files to JSON Files in Node.js Using CSVTOJSON Library Full E
+app.listen(port, () => console.debug(`Server is listening on port ${port}`));
